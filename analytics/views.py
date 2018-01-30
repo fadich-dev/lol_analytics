@@ -82,6 +82,5 @@ def info(request):
                 )
 
     return render(request, 'summoner-info.html', {
-        'account': account,
-        'region': reg
+        'account': account
     })

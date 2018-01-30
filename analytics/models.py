@@ -31,7 +31,7 @@ class Champion(models.Model):
 class Match(models.Model):
     platform_id = models.CharField(max_length=32)
     game_id = models.BigIntegerField()
-    champion = models.ManyToManyField(Champion)
+    champions = models.ManyToManyField(Champion)
     queue = models.IntegerField()
     season = models.BigIntegerField()
     timestamp = models.IntegerField()

@@ -20,9 +20,20 @@
     <a href="/?acc={{ account.name }}&reg={{ account.server }}">Back</a>
     <h3 align="center"><strong>{{ account.name }}</strong></h3>
 
-    <ul>
-        {% for match in matches %}
-            <li>
+    <div align="center">
+        <div>Leagues:</div>
+        {% for smlg in account.summonerleague_set.all %}
+            <div>
+                <strong>{{ smlg.league.tier|title }} {{ smlg.league.rank }}</strong>
+                ({{ smlg.league.name|title }}, {{ smlg.league.queue_type }})
+                <strong>{{ smlg.wins }}</strong> wins / <strong>{{ smlg.losses }}</strong> losses
+            </div>
+        {% endfor %}
+    </div>
+
+    <div>
+        {% for match in account.match_set.all %}
+            <div>
                 {% for champ in match.champions.all %}{{ champ }}{% endfor %} &ndash;
                 {% if not match.role.lower == 'none' %}
                     {{ match.role.capitalize }}/{{ match.lane.lower }}
@@ -30,9 +41,9 @@
                     {{ match.lane.capitalize }}
                 {% endif %}
                 <hr>
-            </li>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 </div>
 
 </body>
