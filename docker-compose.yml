@@ -19,10 +19,11 @@ services:
     image: adminer
     restart: always
     ports:
-      - "8082:8080"
+      - "8089:8080"
   web:
     build: .
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0:8000"
+#    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0:8000"
+    command: bash -c "python manage.py runserver 0:8000"
     volumes:
       - .:/code
     expose:

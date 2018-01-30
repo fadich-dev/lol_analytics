@@ -18,12 +18,12 @@
 
 <div class="wrap">
     <a href="/?acc={{ account.name }}&reg={{ account.server }}">Back</a>
-    <p align="center"><strong>{{ account.name }}</strong></p>
+    <h3 align="center"><strong>{{ account.name }}</strong></h3>
 
     <ul>
         {% for match in matches %}
             <li>
-                {% for champ in match.champion.all %}{{ champ }}{% endfor %} &ndash;
+                {% for champ in match.champions.all %}{{ champ }}{% endfor %} &ndash;
                 {% if not match.role.lower == 'none' %}
                     {{ match.role.capitalize }}/{{ match.lane.lower }}
                 {% else %}

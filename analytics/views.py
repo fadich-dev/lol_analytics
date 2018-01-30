@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from .models import Account, Match, Champion
+from .models import *
 from .api import RiotAPI
 
 
@@ -40,8 +40,7 @@ def info(request):
             summoner_level=acc_info['summonerLevel'],
         )
 
-    matches = Match.objects.filter(account=account)
-    if len(matches) == 0:
+    if account.match_set.count() == 0:
         res = api.get_match_history(account.account_id)
         if res.status_code == 200:
             for match in res.json()['matches']:
@@ -58,8 +57,31 @@ def info(request):
                 )
                 mtch.champion.add(champ)
 
+    if len(account.get_leagues()) == 0:
+        res = api.get_leagues(account.account_id)
+        if res.status_code == 200:
+            for lg in res.json():
+                league = League.objects.create(
+                    league_id=lg['leagueId'],
+                    name=lg['leagueName'],
+                    tier=lg['tier'],
+                    queue_type=lg['queueType'],
+                    rank=lg['rank']
+                )
+
+                SummonerLeague.objects.create(
+                    league_points=lg['leaguePoints'],
+                    wins=lg['wins'],
+                    losses=lg['losses'],
+                    is_veteran=lg['veteran'],
+                    is_inactive=lg['inactive'],
+                    is_fresh_blood=lg['freshBlood'],
+                    is_hot_streak=lg['hotStreak'],
+                    account=account,
+                    league=league
+                )
+
     return render(request, 'summoner-info.html', {
         'account': account,
-        'region': reg,
-        'matches': Match.objects.filter(account=account)
+        'region': reg
     })

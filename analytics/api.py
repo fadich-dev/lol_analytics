@@ -21,6 +21,10 @@ class RiotAPI(object):
         url = self._get_base_url() + '/lol/match/v3/matchlists/by-account/%d' % account_id
         return requests.get(url=url, params=self._get_params())
 
+    def get_leagues(self, summoner_id):
+        url = self._get_base_url() + '/lol/league/v3/positions/by-summoner/%d' % summoner_id
+        return requests.get(url=url, params=self._get_params())
+
     def _get_base_url(self):
         return 'https://%s.api.riotgames.com' % (self._region.strip().lower(),)
 
