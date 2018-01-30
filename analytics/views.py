@@ -55,7 +55,7 @@ def info(request):
                     lane=match['lane'],
                     account=account
                 )
-                mtch.champion.add(champ)
+                mtch.champions.add(champ)
 
     if len(account.get_leagues()) == 0:
         res = api.get_leagues(account.summoner_id)
