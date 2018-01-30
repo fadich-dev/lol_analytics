@@ -58,7 +58,7 @@ def info(request):
                 mtch.champion.add(champ)
 
     if len(account.get_leagues()) == 0:
-        res = api.get_leagues(account.account_id)
+        res = api.get_leagues(account.summoner_id)
         if res.status_code == 200:
             for lg in res.json():
                 league = League.objects.create(
