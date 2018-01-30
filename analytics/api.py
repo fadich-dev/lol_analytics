@@ -3,7 +3,7 @@ from django.conf import settings
 
 
 class RiotAPI(object):
-    __api_key = settings.RIOT_APY_KEY
+    __api_key = settings.RIOT_API_KEY
     _region = ''
 
     def __init__(self, region):

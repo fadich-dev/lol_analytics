@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'e8qk@q(i48wff$^fj#1fvl6t)$x*ie9rprwr#0@h4j-0=7hw+6'
+SECRET_KEY = 'KEY :)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -127,4 +127,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-RIOT_APY_KEY = "RGAPI-4054ed27-a859-4e38-9013-512c73c300ea"
+RIOT_API_KEY = "RIOT_API_KEY"
