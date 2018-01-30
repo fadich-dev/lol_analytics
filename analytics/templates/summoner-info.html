@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<style>
+    .wrap {
+        width: 100%;
+    }
+</style>
+
+<body>
+
+<div class="wrap">
+    <a href="/?acc={{ account.name }}&reg={{ account.server }}">Back</a>
+    <p align="center"><strong>{{ account.name }}</strong></p>
+
+    <ul>
+        {% for match in matches %}
+            <li>
+                {% for champ in match.champion.all %}{{ champ }}{% endfor %} &ndash;
+                {% if not match.role.lower == 'none' %}
+                    {{ match.role.capitalize }}/{{ match.lane.lower }}
+                {% else %}
+                    {{ match.lane.capitalize }}
+                {% endif %}
+                <hr>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+</body>
+</html>

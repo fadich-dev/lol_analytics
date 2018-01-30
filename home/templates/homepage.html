@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .search-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+    }
+
+    .search-wrap input, .search-wrap select {
+        font-size: 20px;
+    }
+
+    .search-wrap select {
+        width: 100%;
+    }
+</style>
+
+<body>
+
+<div class="search-wrap">
+    <form action="/analytics">
+        <p>
+            <input type="text" name="acc" placeholder="Summoner name" value="{{ name }}">
+            <input type="submit" value="Find">
+            <br>
+
+            <select name="srv">
+                <option value="BR1" {% if region == 'BR1' %} selected {% endif %}>Brazil</option>
+                <option value="EUN1" {% if region == 'EUN1' %} selected {% endif %}>EU Nordic &amp; East</option>
+                <option value="EUW1" {% if region == 'EUW1' %} selected {% endif %}>EU West</option>
+                <option value="JP1" {% if region == 'JP1' %} selected {% endif %}>Japan</option>
+                <option value="LA1" {% if region == 'LA1' %} selected {% endif %}>Latin America (North)</option>
+                <option value="LA2" {% if region == 'LA2' %} selected {% endif %}>Latin America (South)</option>
+                <option value="NA1" {% if region == 'NA1' %} selected {% endif %}>North America</option>
+                <option value="OC1" {% if region == 'OC1' %} selected {% endif %}>Oceania</option>
+                <option value="RU" {% if region == 'RU' %} selected {% endif %}>Russia</option>
+                <option value="TR1" {% if region == 'TR1' %} selected {% endif %}>Turkey</option>
+            </select>
+        </p>
+    </form>
+</div>
+
+</body>
+</html>
