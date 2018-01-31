@@ -43,7 +43,7 @@ class Match(models.Model):
 
     def __str__(self):
         time = datetime.datetime.fromtimestamp(self.timestamp).strftime('%Y-%m-%d %H:%M')
-        return '%s (%s)' % (self.account.name, time)
+        return '%s, %s (%s)' % (self.account.name, time, self.account.server)
 
 
 class League(models.Model):
