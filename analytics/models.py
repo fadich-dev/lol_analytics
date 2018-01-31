@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import datetime
 
 # Create your models here.
@@ -11,6 +12,7 @@ class Account(models.Model):
     summoner_id = models.IntegerField()
     icon_id = models.IntegerField()
     summoner_level = models.IntegerField()
+    updated_at = models.DateTimeField(null=True)
 
     def get_leagues(self):
         return [summoner_league.league for summoner_league in self.summonerleague_set.all()]

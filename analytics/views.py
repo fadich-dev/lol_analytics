@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from .models import *
+from .models import Account
+from .statistic import Updater
 from .api import RiotAPI
 
 
@@ -40,46 +41,10 @@ def info(request):
             summoner_level=acc_info['summonerLevel'],
         )
 
-    if account.match_set.count() == 0:
-        res = api.get_match_history(account.account_id)
-        if res.status_code == 200:
-            for match in res.json()['matches']:
-                champ = Champion.objects.get(champion_id=match['champion'])
-                mtch = Match.objects.create(
-                    platform_id=match['platformId'],
-                    game_id=match['gameId'],
-                    queue=match['queue'],
-                    season=match['season'],
-                    timestamp=int(match['timestamp'] / 1000),
-                    role=match['role'],
-                    lane=match['lane'],
-                    account=account
-                )
-                mtch.champions.add(champ)
+    updater = Updater(account)
 
-    if len(account.get_leagues()) == 0:
-        res = api.get_leagues(account.summoner_id)
-        if res.status_code == 200:
-            for lg in res.json():
-                league = League.objects.create(
-                    league_id=lg['leagueId'],
-                    name=lg['leagueName'],
-                    tier=lg['tier'],
-                    queue_type=lg['queueType'],
-                    rank=lg['rank']
-                )
-
-                SummonerLeague.objects.create(
-                    league_points=lg['leaguePoints'],
-                    wins=lg['wins'],
-                    losses=lg['losses'],
-                    is_veteran=lg['veteran'],
-                    is_inactive=lg['inactive'],
-                    is_fresh_blood=lg['freshBlood'],
-                    is_hot_streak=lg['hotStreak'],
-                    account=account,
-                    league=league
-                )
+    if not updater.is_updated():
+        updater.update_data()
 
     return render(request, 'summoner-info.html', {
         'account': account
