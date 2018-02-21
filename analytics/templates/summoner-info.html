@@ -36,10 +36,11 @@
             <div>
                 {% for champ in match.champions.all %}{{ champ }}{% endfor %} &ndash;
                 {% if not match.role.lower == 'none' %}
-                    {{ match.role.capitalize }}/{{ match.lane.lower }}
+                    {{ match.role.capitalize }}, {{ match.lane.lower }}
                 {% else %}
                     {{ match.lane.capitalize }}
                 {% endif %}
+                {{ match.get_time }}
                 <hr>
             </div>
         {% endfor %}
