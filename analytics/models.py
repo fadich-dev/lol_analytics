@@ -41,8 +41,10 @@ class Match(models.Model):
     account = models.ForeignKey(Account)
 
     def __str__(self):
-        time = datetime.datetime.fromtimestamp(self.timestamp).strftime('%Y-%m-%d %H:%M')
-        return '%s, %s (%s)' % (self.account.name, time, self.account.server)
+        return '%s, %s (%s)' % (self.account.name, self.get_time(), self.account.server)
+
+    def get_time(self):
+        return datetime.datetime.fromtimestamp(self.timestamp).strftime('%Y-%m-%d %H:%M')
 
 
 class League(models.Model):
