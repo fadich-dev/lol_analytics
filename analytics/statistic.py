@@ -5,6 +5,7 @@ from django.utils import timezone
 
 # TODO: rework this (_update_leagues, for example)... :)
 
+
 class Updater:
 
     def __init__(self, account):
@@ -18,10 +19,10 @@ class Updater:
         self._api = RiotAPI(self._account.server)
 
     def update_data(self):
-        self._update_matches()
-        self._update_leagues()
         self._account.updated_at = timezone.now()
         self._account.save()
+        self._update_matches()
+        self._update_leagues()
 
     def is_updated(self):
         if not self._account.updated_at:
@@ -55,7 +56,6 @@ class Updater:
         if res.status_code == 200:
             leagues = res.json()
             for lg in leagues:
-                print('!!!!!!!!!!!!!!! ' + lg['leagueId'])
                 try:
                     league = League.objects.get(league_id=lg['leagueId'], tier=lg['tier'], rank=lg['rank'])
                 except ObjectDoesNotExist as e:
