@@ -1,10 +1,10 @@
 from analytics.api.serializers import AccountSerializer
 from analytics.models import Account
 from analytics.api_external import RiotAPI
+from analytics.statistic import Updater
 
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView, Response
-from django.http.response import Http404
 
 
 class AccountRetrieveView(APIView):
@@ -12,17 +12,17 @@ class AccountRetrieveView(APIView):
         server = server.upper()
         api = RiotAPI(server)
         res = api.get_account(name)
+        update = 'update' in request.GET
 
         if not res.status_code == 200:
             return Response(status=404)
 
         acc_info = res.json()
 
-        lookup = {'server': server, 'name': acc_info['name']}
-        try:
-            return Response(self._get_account(request, lookup))
-        except Http404 as e:
-            Account.objects.create(
+        account = Account.objects.filter(name=acc_info['name'], server=server).first()
+
+        if not account:
+            account = Account.objects.create(
                 name=acc_info['name'],
                 server=server,
                 account_id=acc_info['accountId'],
@@ -30,10 +30,22 @@ class AccountRetrieveView(APIView):
                 icon_id=acc_info['profileIconId'],
                 summoner_level=acc_info['summonerLevel'],
             )
+            update = True
 
-        return Response(self._get_account(request, lookup))
+        updater = Updater(account)
+        if update:
+            if not updater.is_updated():
+                updater.update_data()
+            else:
+                return Response({
+                    'message':
+                        'The account is already updated. '
+                        'Next update is possible in %d seconds' % updater.get_next_update()
+                }, status=400)
 
-    def _get_account(self, request, lookup):
+        lookup = {'server': server, 'name': acc_info['name']}
+
         vessel = get_object_or_404(Account, **lookup)
         serializer = AccountSerializer(vessel, context={'request': request})
-        return serializer.data
+
+        return Response(serializer.data)

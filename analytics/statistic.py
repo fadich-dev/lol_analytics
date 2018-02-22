@@ -30,6 +30,13 @@ class Updater:
 
         return timezone.now().timestamp() - self._account.updated_at.timestamp() < 600
 
+    def get_last_update(self):
+        return self._account.updated_at.timestamp()
+
+    def get_next_update(self):
+        diff = timezone.now().timestamp() - self._account.updated_at.timestamp()
+        return (0, 600 - diff)[diff < 600]
+
     def _update_matches(self):
         res = self._api.get_match_history(self._account.account_id)
         if res.status_code == 200:
