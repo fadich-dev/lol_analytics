@@ -16,7 +16,7 @@ class Updater:
         :type account: Account
         """
         self._account = account
-        self._api = RiotAPI(self._account.server)
+        self._api = RiotAPI(self._account.region.name)
 
     def update_data(self):
         self._account.updated_at = timezone.now()
@@ -41,8 +41,13 @@ class Updater:
         res = self._api.get_match_history(self._account.account_id)
         if res.status_code == 200:
             for match in res.json()['matches']:
-                if self._account.match_set \
-                        .filter(platform_id=match['platformId'], game_id=match['gameId'], queue=match['queue']).count():
+                filters = {
+                    'platform_id': match['platformId'],
+                    'game_id': match['gameId'],
+                    'queue': match['queue']
+                }
+
+                if Match.objects.filter(**filters).count():
                     continue
 
                 champ = Champion.objects.get(champion_id=match['champion'])
@@ -53,9 +58,10 @@ class Updater:
                     season=match['season'],
                     timestamp=int(match['timestamp'] / 1000),
                     role=match['role'],
-                    lane=match['lane'],
-                    account=self._account
+                    lane=match['lane']
                 )
+                mtch.matchplayer_set.add(self._account)
+                mtch.region.add(self._account.region)
                 mtch.champions.add(champ)
 
     def _update_leagues(self):

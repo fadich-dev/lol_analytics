@@ -4,9 +4,16 @@ import datetime
 # Create your models here.
 
 
+class Region(models.Model):
+    name = models.CharField(max_length=32)
+
+    def __str__(self):
+        return self.name
+
+
 class Account(models.Model):
     name = models.CharField(max_length=255)
-    server = models.CharField(max_length=32)
+    region = models.ForeignKey(Region)
     account_id = models.IntegerField()
     summoner_id = models.IntegerField()
     icon_id = models.IntegerField()
@@ -16,8 +23,11 @@ class Account(models.Model):
     def get_leagues(self):
         return [summoner_league.league for summoner_league in self.summonerleague_set.all()]
 
+    def get_matches(self):
+        return [match_player.match for match_player in self.matchplayer_set.all()]
+
     def __str__(self):
-        return '%s (%s)' % (self.name, self.server)
+        return '%s (%s)' % (self.name, self.region.name)
 
 
 class Champion(models.Model):
@@ -38,13 +48,22 @@ class Match(models.Model):
     timestamp = models.IntegerField()
     role = models.CharField(max_length=32)
     lane = models.CharField(max_length=32)
-    account = models.ForeignKey(Account)
+    region = models.ForeignKey(Region)
 
     def __str__(self):
-        return '%s, %s (%s)' % (self.account.name, self.get_time(), self.account.server)
+        return '%s (%s): %s' % (
+            self.region.name,
+            self.get_time(),
+            ', '.join([player.name for player in self.matchplayer_set.all()])
+        )
 
     def get_time(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime('%Y-%m-%d %H:%M')
+
+
+class MatchPlayer(models.Model):
+    account = models.ForeignKey(Account)
+    match = models.ForeignKey(Match)
 
 
 class League(models.Model):

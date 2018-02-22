@@ -16,7 +16,7 @@ services:
     restart: always
     environment:
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=lol_analytics
     expose:
       - "5432"
 

@@ -23,7 +23,7 @@ class LeaguesSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    matches = MatchesSerializer(many=True, read_only=True, source='match_set')
+    matches = MatchesSerializer(many=True, read_only=True, source='get_matches')
     leagues = LeaguesSerializer(many=True, read_only=True, source='get_leagues')
 
     class Meta:
@@ -31,7 +31,7 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'server',
+            'region',
             'account_id',
             'summoner_id',
             'icon_id',
