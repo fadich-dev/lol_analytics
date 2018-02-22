@@ -15,7 +15,7 @@ class AccountRetrieveView(APIView):
         update = 'update' in request.GET
 
         if not res.status_code == 200:
-            return Response(status=404)
+            return Response(status=res.status_code)
 
         acc_info = res.json()
 

@@ -28,7 +28,7 @@ services:
 
   web:
     build: .
-    command: bash -c "sleep 5; python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0:8000 && python manage.py champions"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0:8000 && python manage.py champions"
 #    command: bash -c "python manage.py runserver 0:8000"
     volumes:
       - .:/code
