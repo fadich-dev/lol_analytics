@@ -1,6 +1,6 @@
 from .models import Account, Champion, Match, League, SummonerLeague
 from django.core.exceptions import ObjectDoesNotExist
-from .api import RiotAPI
+from .api_external import RiotAPI
 from django.utils import timezone
 
 # TODO: rework this (_update_leagues, for example)... :)

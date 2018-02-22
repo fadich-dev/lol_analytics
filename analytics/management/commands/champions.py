@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
 from analytics.models import Champion
-from analytics.api import RiotAPI
+from analytics.api_external import RiotAPI
 
 
 class Command(BaseCommand):
