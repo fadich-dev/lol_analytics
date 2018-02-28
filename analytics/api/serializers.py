@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from analytics.models import Account, Match, Champion, League
+from analytics.models import Account, Match, Champion, League, Region, MatchPlayer
 
 
 class ChampionsSerializer(serializers.ModelSerializer):
@@ -8,12 +8,50 @@ class ChampionsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    region = RegionSerializer(read_only=True)
+
+    class Meta:
+        model = Account
+        fields = '__all__'
+
+
+class MatchPlayerSerializer(serializers.ModelSerializer):
+    account = AccountSerializer(read_only=True)
+    champion = ChampionsSerializer(read_only=True)
+
+    class Meta:
+        model = MatchPlayer
+        fields = (
+            'role',
+            'lane',
+            'champion',
+            'account',
+        )
+
+
 class MatchesSerializer(serializers.ModelSerializer):
-    champions = ChampionsSerializer(many=True, read_only=True)
+    region = RegionSerializer(read_only=True)
+    players = MatchPlayerSerializer(many=True, read_only=True, source='matchplayer_set')
 
     class Meta:
         model = Match
-        fields = '__all__'
+        ordering = ('-timestamp',)
+        fields = (
+            'platform_id',
+            'game_id',
+            'queue',
+            'season',
+            'timestamp',
+            'region',
+            'players',
+        )
 
 
 class LeaguesSerializer(serializers.ModelSerializer):
@@ -22,8 +60,9 @@ class LeaguesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AccountSerializer(serializers.ModelSerializer):
-    matches = MatchesSerializer(many=True, read_only=True, source='match_set')
+class SummonerInfoSerializer(serializers.ModelSerializer):
+    region = RegionSerializer(read_only=True)
+    matches = MatchesSerializer(many=True, read_only=True, source='get_matches')
     leagues = LeaguesSerializer(many=True, read_only=True, source='get_leagues')
 
     class Meta:
@@ -31,12 +70,12 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'server',
+            'region',
             'account_id',
             'summoner_id',
             'icon_id',
             'summoner_level',
             'updated_at',
-            'matches',
             'leagues',
+            'matches',
         )

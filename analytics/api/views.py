@@ -1,5 +1,5 @@
-from analytics.api.serializers import AccountSerializer
-from analytics.models import Account
+from analytics.api.serializers import SummonerInfoSerializer
+from analytics.models import Account, Region
 from analytics.api_external import RiotAPI
 from analytics.statistic import Updater
 
@@ -19,12 +19,13 @@ class AccountRetrieveView(APIView):
 
         acc_info = res.json()
 
-        account = Account.objects.filter(name=acc_info['name'], server=server).first()
+        region = Region.objects.get_or_create(name=server)[0]
+        account = Account.objects.filter(name=acc_info['name'], region=region).first()
 
         if not account:
             account = Account.objects.create(
                 name=acc_info['name'],
-                server=server,
+                region=region,
                 account_id=acc_info['accountId'],
                 summoner_id=acc_info['id'],
                 icon_id=acc_info['profileIconId'],
@@ -39,13 +40,13 @@ class AccountRetrieveView(APIView):
             else:
                 return Response({
                     'message':
-                        'The account is already updated. '
+                        'Account is already updated. '
                         'Next update is possible in %d seconds' % updater.get_next_update()
                 }, status=400)
 
-        lookup = {'server': server, 'name': acc_info['name']}
+        lookup = {'region': region, 'name': acc_info['name']}
 
         vessel = get_object_or_404(Account, **lookup)
-        serializer = AccountSerializer(vessel, context={'request': request})
+        serializer = SummonerInfoSerializer(vessel, context={'request': request})
 
         return Response(serializer.data)

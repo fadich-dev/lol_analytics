@@ -32,16 +32,23 @@
     </div>
 
     <div>
-        {% for match in account.match_set.all %}
+        {% for match in account.get_matches %}
             <div style="display: flex; justify-content: space-between;">
-                <span>
-                    {% for champ in match.champions.all %}{{ champ }}{% endfor %} &ndash;
-                    {% if not match.role.lower == 'none' %}
-                        {{ match.role.capitalize }}, {{ match.lane.lower }}
-                    {% else %}
-                        {{ match.lane.capitalize }}
-                    {% endif %}
-                </span>
+                <div>
+                    {% for match_player in match.matchplayer_set.all %}
+                        <strong>{{ match_player.account.name }}</strong>:
+                        <strong>{{ match_player.champion.name }}</strong>
+                        &ndash;
+                        <span>
+                            {% if not match_player.role.lower == 'none' %}
+                                {{ match_player.role.capitalize }}, {{ match_player.lane.lower }}
+                            {% else %}
+                                {{ match_player.lane.capitalize }}
+                            {% endif %}
+                        </span>
+                        <br>
+                    {% endfor %}
+                </div>
                 <span>(<i>{{ match.get_time }}</i>)</span>
             </div>
             <hr>

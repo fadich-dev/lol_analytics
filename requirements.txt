@@ -3,3 +3,4 @@ psycopg2
 requests
 djangorestframework
 pygments
+psycopg2-binary
