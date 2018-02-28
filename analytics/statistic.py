@@ -39,23 +39,23 @@ class Updater:
     def _update_matches(self):
         res = self._api.get_match_history(self._account.account_id)
         if res.status_code == 200:
-            for match in res.json()['matches']:
+            for api_match in res.json()['matches']:
                 filters = {
-                    'platform_id': match['platformId'],
-                    'game_id': match['gameId'],
-                    'queue': match['queue'],
-                    'season': match['season'],
-                    'timestamp': int(match['timestamp'] / 1000),
+                    'platform_id': api_match['platformId'],
+                    'game_id': api_match['gameId'],
+                    'queue': api_match['queue'],
+                    'season': api_match['season'],
+                    'timestamp': int(api_match['timestamp'] / 1000),
                     'region': self._account.region,
                 }
-                champ = Champion.objects.get(champion_id=match['champion'])
-                _match = Match.objects.get_or_create(**filters)[0]
+                champ = Champion.objects.get(champion_id=api_match['champion'])
+                match = Match.objects.get_or_create(**filters)[0]
                 MatchPlayer.objects.get_or_create(
                     account=self._account,
-                    match=_match,
+                    match=match,
                     champion=champ,
-                    role=match['role'],
-                    lane=match['lane']
+                    role=api_match['role'],
+                    lane=api_match['lane']
                 )
 
     def _update_leagues(self):
@@ -65,9 +65,13 @@ class Updater:
 
             SummonerLeague.objects.filter(account=self._account).delete()
             for lg in leagues:
-                league = League.objects.get_or_create(league_id=lg['leagueId'], tier=lg['tier'], rank=lg['rank'])[0]
-                league.name = lg['leagueName']
-                league.queue_type = lg['queueType']
+                league = League.objects.get_or_create(
+                    league_id=lg['leagueId'],
+                    tier=lg['tier'],
+                    rank=lg['rank'],
+                    name=lg['leagueName'],
+                    queue_type=lg['queueType']
+                )[0]
 
                 SummonerLeague.objects.create(
                     league_points=lg['leaguePoints'],

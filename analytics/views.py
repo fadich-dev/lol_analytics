@@ -29,10 +29,10 @@ def info(request):
 
     acc_info = res.json()
 
-    region = Region.objects.get_or_create(name=reg.upper())
+    region = Region.objects.get_or_create(name=reg.upper())[0]
 
     try:
-        account = Account.objects.get(name=acc_info['name'], server=region)
+        account = Account.objects.get(name=acc_info['name'], region=region)
     except ObjectDoesNotExist as e:
         account = Account.objects.create(
             name=acc_info['name'],
