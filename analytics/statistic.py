@@ -44,68 +44,40 @@ class Updater:
                 filters = {
                     'platform_id': match['platformId'],
                     'game_id': match['gameId'],
-                    'queue': match['queue']
+                    'queue': match['queue'],
+                    'season': match['season'],
+                    'timestamp': int(match['timestamp'] / 1000),
+                    'region': self._account.region,
                 }
-
-                if Match.objects.filter(**filters).count():
-                    continue
-
                 champ = Champion.objects.get(champion_id=match['champion'])
-                mtch = Match.objects.create(
-                    platform_id=match['platformId'],
-                    game_id=match['gameId'],
-                    queue=match['queue'],
-                    season=match['season'],
-                    timestamp=int(match['timestamp'] / 1000),
+                _match = Match.objects.get_or_create(**filters)[0]
+                _match.matchplayer_set.get_or_create(
+                    account=self._account,
+                    match=_match,
+                    champion=champ,
                     role=match['role'],
                     lane=match['lane']
                 )
-                mtch.matchplayer_set.add(self._account)
-                mtch.region.add(self._account.region)
-                mtch.champions.add(champ)
 
     def _update_leagues(self):
         res = self._api.get_leagues(self._account.summoner_id)
         if res.status_code == 200:
             leagues = res.json()
+
+            SummonerLeague.objects.filter(account=self._account).delete()
             for lg in leagues:
-                try:
-                    league = League.objects.get(league_id=lg['leagueId'], tier=lg['tier'], rank=lg['rank'])
-                except ObjectDoesNotExist as e:
-                    league = League.objects.create(
-                        league_id=lg['leagueId'],
-                        name=lg['leagueName'],
-                        tier=lg['tier'],
-                        queue_type=lg['queueType'],
-                        rank=lg['rank']
-                    )
+                league = League.objects.get_or_create(league_id=lg['leagueId'], tier=lg['tier'], rank=lg['rank'])[0]
+                league.name = lg['leagueName']
+                league.queue_type = lg['queueType']
 
-                try:
-                    summoner_league = self._account.summonerleague_set.get(league=league, account=self._account)
-                    summoner_league.league_points = lg['leaguePoints']
-                    summoner_league.wins = lg['wins']
-                    summoner_league.losses = lg['losses']
-                    summoner_league.is_veteran = lg['veteran']
-                    summoner_league.is_inactive = lg['inactive']
-                    summoner_league.is_fresh_blood = lg['freshBlood']
-                    summoner_league.is_hot_streak = lg['hotStreak']
-                    summoner_league.save()
-                    continue
-                except ObjectDoesNotExist as e:
-                    SummonerLeague.objects.create(
-                        league_points=lg['leaguePoints'],
-                        wins=lg['wins'],
-                        losses=lg['losses'],
-                        is_veteran=lg['veteran'],
-                        is_inactive=lg['inactive'],
-                        is_fresh_blood=lg['freshBlood'],
-                        is_hot_streak=lg['hotStreak'],
-                        account=self._account,
-                        league=league
-                    )
-
-            lgs = [lg['leagueId'] for lg in leagues]
-            summoner_leagues = self._account.summonerleague_set.all()
-            for summoner_league in summoner_leagues:
-                if summoner_league.league.league_id not in lgs:
-                    summoner_league.delete()
+                SummonerLeague.objects.create(
+                    league_points=lg['leaguePoints'],
+                    wins=lg['wins'],
+                    losses=lg['losses'],
+                    is_veteran=lg['veteran'],
+                    is_inactive=lg['inactive'],
+                    is_fresh_blood=lg['freshBlood'],
+                    is_hot_streak=lg['hotStreak'],
+                    account=self._account,
+                    league=league
+                )

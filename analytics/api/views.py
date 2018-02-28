@@ -36,11 +36,11 @@ class AccountRetrieveView(APIView):
         updater = Updater(account)
         if update:
             # if not updater.is_updated():
-            updater.update_data()
+                updater.update_data()
             # else:
             #     return Response({
             #         'message':
-            #             'The account is already updated. '
+            #             'Account is already updated. '
             #             'Next update is possible in %d seconds' % updater.get_next_update()
             #     }, status=400)
 

@@ -42,19 +42,16 @@ class Champion(models.Model):
 class Match(models.Model):
     platform_id = models.CharField(max_length=32)
     game_id = models.BigIntegerField()
-    champions = models.ManyToManyField(Champion)
     queue = models.IntegerField()
     season = models.BigIntegerField()
     timestamp = models.IntegerField()
-    role = models.CharField(max_length=32)
-    lane = models.CharField(max_length=32)
     region = models.ForeignKey(Region)
 
     def __str__(self):
-        return '%s (%s): %s' % (
+        return '%s, %s (%s)' % (
             self.region.name,
             self.get_time(),
-            ', '.join([player.name for player in self.matchplayer_set.all()])
+            ', '.join(['{0} - {1}'.format(p.account.name, p.champion.name) for p in self.matchplayer_set.all()])
         )
 
     def get_time(self):
@@ -64,6 +61,17 @@ class Match(models.Model):
 class MatchPlayer(models.Model):
     account = models.ForeignKey(Account)
     match = models.ForeignKey(Match)
+    champion = models.ForeignKey(Champion)
+    role = models.CharField(max_length=32)
+    lane = models.CharField(max_length=32)
+
+    def __str__(self):
+        return '{a} - {c}, {ln} ({t})'.format(
+            a=self.account.name,
+            c=self.champion.name,
+            t=self.match.get_time(),
+            ln=self.lane.title()
+        )
 
 
 class League(models.Model):

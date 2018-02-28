@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from analytics.models import Account, Match, Champion, League
+from analytics.models import Account, Match, Champion, League, Region, MatchPlayer
 
 
 class ChampionsSerializer(serializers.ModelSerializer):
@@ -8,8 +8,21 @@ class ChampionsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+
+class MatchPlayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchPlayer
+        fields = '__all__'
+
+
 class MatchesSerializer(serializers.ModelSerializer):
-    champions = ChampionsSerializer(many=True, read_only=True)
+    region = RegionSerializer(read_only=True)
+    players = MatchPlayerSerializer(read_only=True, source='matchplayer_set')
 
     class Meta:
         model = Match
@@ -23,6 +36,7 @@ class LeaguesSerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    region = RegionSerializer(read_only=True)
     matches = MatchesSerializer(many=True, read_only=True, source='get_matches')
     leagues = LeaguesSerializer(many=True, read_only=True, source='get_leagues')
 
