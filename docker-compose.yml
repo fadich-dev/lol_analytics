@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ./.:/code
       - ./nginx-config:/etc/nginx/conf.d
@@ -16,7 +16,7 @@ services:
     restart: always
     environment:
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=lol_analytics
     expose:
       - "5432"
 
@@ -28,11 +28,14 @@ services:
 
   web:
     build: .
-    command: bash -c "sleep 5; python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0:8000 && python manage.py champions"
+    command: bash -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py champions &&
+      python manage.py runserver 0:8000"
 #    command: bash -c "python manage.py runserver 0:8000"
     volumes:
       - .:/code
     expose:
-      - "8000"
+      - "8001"
     depends_on:
       - db
