@@ -1,5 +1,4 @@
-from .models import Account, Champion, Match, League, SummonerLeague
-from django.core.exceptions import ObjectDoesNotExist
+from .models import Account, Champion, Match, League, SummonerLeague, MatchPlayer
 from .api_external import RiotAPI
 from django.utils import timezone
 
@@ -51,7 +50,7 @@ class Updater:
                 }
                 champ = Champion.objects.get(champion_id=match['champion'])
                 _match = Match.objects.get_or_create(**filters)[0]
-                _match.matchplayer_set.get_or_create(
+                MatchPlayer.objects.get_or_create(
                     account=self._account,
                     match=_match,
                     champion=champ,
