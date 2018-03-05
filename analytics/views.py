@@ -34,6 +34,9 @@ def info(request):
 
     try:
         account = Account.objects.get(name=acc_info['name'], region=region)
+        account.icon_id = acc_info['profileIconId']
+        account.summoner_level = acc_info['summonerLevel']
+        account.save()
     except ObjectDoesNotExist as e:
         account = Account.objects.create(
             name=acc_info['name'],

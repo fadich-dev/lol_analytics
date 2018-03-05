@@ -1,7 +1,7 @@
 from .models import Account, Champion, Match, League, SummonerLeague, MatchPlayer
 from .api_external import RiotAPI
 from django.utils import timezone
-# from time import sleep
+from time import sleep
 
 # TODO: rework this (_update_leagues, for example)... :)
 
@@ -49,9 +49,10 @@ class Updater:
                     'timestamp': int(api_match['timestamp'] / 1000),
                     'region': self._account.region,
                 }
-                match = Match.objects.get_or_create(**filters)[0]
-                # sleep(3)
-                self._update_match(match)
+                match = Match.objects.filter(**filters).first()
+                if not match:
+                    sleep(1)
+                    self._update_match(match)
 
     def _update_match(self, match):
         res = self._api.get_match(match.game_id)
