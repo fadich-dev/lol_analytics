@@ -32,6 +32,10 @@ class AccountRetrieveView(APIView):
                 summoner_level=acc_info['summonerLevel'],
             )
             update = True
+        else:
+            account.icon_id = acc_info['profileIconId']
+            account.summoner_level = acc_info['summonerLevel']
+            account.save()
 
         updater = Updater(account)
         if update:

@@ -16,8 +16,8 @@ class Account(models.Model):
     region = models.ForeignKey(Region)
     account_id = models.IntegerField()
     summoner_id = models.IntegerField()
-    icon_id = models.IntegerField()
-    summoner_level = models.IntegerField()
+    icon_id = models.IntegerField(null=True)
+    summoner_level = models.IntegerField(null=True)
     updated_at = models.DateTimeField(null=True)
 
     def get_leagues(self):

@@ -16,6 +16,7 @@ def info(request):
         acc = params['acc']
     if 'srv' in params:
         reg = params['srv']
+    update = 'update' in request.GET
 
     if not (acc or reg):
         return render(request, 'summoner-not-found.html')
@@ -45,7 +46,7 @@ def info(request):
 
     updater = Updater(account)
 
-    if not updater.is_updated():
+    if not updater.is_updated() and update:
         updater.update_data()
 
     return render(request, 'summoner-info.html', {

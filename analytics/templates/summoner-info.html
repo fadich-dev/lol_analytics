@@ -17,7 +17,7 @@
 <body>
 
 <div class="wrap">
-    <a href="/?acc={{ account.name }}&reg={{ account.server }}">Back</a>
+    <a href="/?acc={{ account.name }}&reg={{ account.region }}">Back</a>
     <h3 align="center"><strong>{{ account.name }}</strong></h3>
 
     <div align="center">
@@ -30,6 +30,13 @@
             </div>
         {% endfor %}
     </div>
+
+    <h3 align="right">
+        <button>
+            <a href="{{ request.get_full_path }}&update">Update</a>
+        </button>
+    </h3>
+
 
     <div>
         {% for match in account.get_matches %}
