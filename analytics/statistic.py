@@ -51,6 +51,7 @@ class Updater:
                 }
                 match = Match.objects.filter(**filters).first()
                 if not match:
+                    match = Match.objects.create(**filters)
                     sleep(1)
                     self._update_match(match)
 
