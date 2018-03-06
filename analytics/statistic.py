@@ -53,7 +53,11 @@ class Updater(object):
                 if not match:
                     match = Match.objects.create(**filters)
                     sleep(1)
-                    self._update_match(match)
+
+                    try:
+                        self._update_match(match)
+                    except Exception as e:
+                        pass
 
     def _update_match(self, match):
         res = self._api.get_match(match.game_id)
@@ -67,10 +71,11 @@ class Updater(object):
 
     def _update_match_player(self, match, player):
         account = self._update_match_account(player, self._account.region)
-        champion = Champion.objects.filter(champion_id=player['championId']).first()
 
         if MatchPlayer.objects.filter(account=account, match=match).first():
             return
+
+        champion = Champion.objects.filter(champion_id=player['championId']).first()
 
         MatchPlayer.objects.create(
             account=account,
@@ -78,6 +83,7 @@ class Updater(object):
             champion=champion,
             role=player['timeline']['role'],
             lane=player['timeline']['lane'],
+
             win=player['stats']['win'],
             kills=player['stats']['kills'],
             deaths=player['stats']['deaths'],
