@@ -6,7 +6,7 @@ from time import sleep
 # TODO: rework this (_update_leagues, for example)... :)
 
 
-class Updater:
+class Updater(object):
 
     def __init__(self, account):
         """
