@@ -57,6 +57,9 @@ class Match(models.Model):
     def get_time(self):
         return datetime.datetime.fromtimestamp(self.timestamp).strftime('%Y-%m-%d %H:%M')
 
+    def by_account(self, account):
+        return self.matchplayer_set.filter(account=account).first()
+
 
 class MatchPlayer(models.Model):
     account = models.ForeignKey(Account)

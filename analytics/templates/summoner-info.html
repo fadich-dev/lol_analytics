@@ -12,6 +12,14 @@
     .wrap {
         width: 100%;
     }
+    
+    .win {
+        color: green;
+    }
+    
+    .lose {
+        color: red;
+    }
 </style>
 
 <body>
@@ -26,7 +34,7 @@
             <div>
                 <strong>{{ smlg.league.tier|title }} {{ smlg.league.rank }}</strong>
                 ({{ smlg.league.name|title }}, {{ smlg.league.queue_type }})
-                <strong>{{ smlg.wins }}</strong> wins / <strong>{{ smlg.losses }}</strong> losses
+                <strong class="win">{{ smlg.wins }}</strong> wins / <strong class="lose">{{ smlg.losses }}</strong> losses
             </div>
         {% endfor %}
     </div>
@@ -39,10 +47,17 @@
 
 
     <div>
-        {% for match in account.get_matches %}
+        {% for current_match_player in account.matchplayer_set.all %}
+            <strong>
+                {% if current_match_player.win %}
+                    <span class="win">Victory</span>
+                {% else %}
+                    <span class="lose">Defeat</span>
+                {% endif %}
+            </strong>
             <div style="display: flex; justify-content: space-between;">
                 <div>
-                    {% for match_player in match.matchplayer_set.all %}
+                    {% for match_player in current_match_player.match.matchplayer_set.all %}
                         <strong>{{ match_player.account.name }}</strong>:
                         <strong>{{ match_player.champion.name }}</strong>
                         &ndash;
@@ -56,7 +71,7 @@
                         <br>
                     {% endfor %}
                 </div>
-                <span>(<i>{{ match.get_time }}</i>)</span>
+                <span>(<i>{{ current_match_player.match.get_time }}</i>)</span>
             </div>
             <hr>
         {% endfor %}
