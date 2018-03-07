@@ -58,7 +58,11 @@
             <div style="display: flex; justify-content: space-between;">
                 <div>
                     {% for match_player in current_match_player.match.matchplayer_set.all %}
-                        <strong>{{ match_player.account.name }}</strong>:
+                        <strong>
+                            <a href="{% url 'info' %}?acc={{ match_player.account.name }}&srv={{ match_player.account.region }}">
+                                {{ match_player.account.name }}
+                            </a>
+                        </strong>:
                         <strong>{{ match_player.champion.name }}</strong>
                         &ndash;
                         <span>
