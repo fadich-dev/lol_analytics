@@ -47,7 +47,7 @@
 
 
     <div>
-        {% for current_match_player in account.matchplayer_set.all %}
+        {% for current_match_player in account.get_matches_players %}
             <strong>
                 {% if current_match_player.win %}
                     <span class="win">Victory</span>

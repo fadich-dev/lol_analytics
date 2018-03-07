@@ -24,7 +24,10 @@ class Account(models.Model):
         return [summoner_league.league for summoner_league in self.summonerleague_set.all()]
 
     def get_matches(self):
-        return [match_player.match for match_player in self.matchplayer_set.all()]
+        return [match_player.match for match_player in self.get_matches_players()]
+
+    def get_matches_players(self):
+        return self.matchplayer_set.order_by('-match__timestamp').all()
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.region.name)

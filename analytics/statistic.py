@@ -189,18 +189,129 @@ class Analyzer(object):
     def __init__(self, account):
         self._account = account
 
-    def get_avg(self):
-        filtered = MatchPlayer.objects.filter(account=self._account)
-        kills = filtered.aggregate(Sum('kills'))
-        assists = filtered.aggregate(Sum('assists'))
-        deaths = filtered.aggregate(Sum('deaths'))
-        avg = {
-            'kills': {**filtered.aggregate(Avg('kills')), **kills},
-            'deaths': {**filtered.aggregate(Avg('deaths')), **deaths},
-            'assists': {**filtered.aggregate(Avg('assists')), **assists},
-            'kda': {
-                'kda__avg': (kills.get('kills__sum') + assists.get('assists__sum')) / deaths.get('deaths__sum')
-            },
-        }
+    def get_base_info(self, **kwargs):
+        avg = dict()
+        filters = {'account': self._account, **kwargs}
+        filtered = MatchPlayer.objects.filter(**filters)
+
+        # Match info
+        avg['matches__sum'] = filtered.count()
+        avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **filters).count()
+        avg['loses__sum'] = avg['matches__sum'] - avg['wins__sum']
+        avg['wins__avg'] = avg['wins__sum'] / avg['matches__sum']
+        avg['loses__avg'] = avg['loses__sum'] / avg['matches__sum']
+
+        # KDA info
+        avg['kills__sum'] = filtered.aggregate(Sum('kills'))\
+            .get('kills__sum')
+        avg['deaths__sum'] = filtered.aggregate(Sum('deaths'))\
+            .get('deaths__sum')
+        avg['assists__sum'] = filtered.aggregate(Sum('assists'))\
+            .get('assists__sum')
+        avg['kills__avg'] = filtered.aggregate(Avg('kills'))\
+            .get('kills__avg')
+        avg['deaths__avg'] = filtered.aggregate(Avg('deaths'))\
+            .get('deaths__avg')
+        avg['assists__avg'] = filtered.aggregate(Avg('assists'))\
+            .get('assists__avg')
+        avg['kda__avg'] = (avg.get('kills__sum') + avg.get('assists__sum')) / avg.get('deaths__sum')
+
+        # Additional kills info
+        avg['largest_multi_kill__avg'] = filtered.aggregate(Avg('largest_multi_kill'))\
+            .get('largest_multi_kill__avg')
+        avg['largest_killing_spree__avg'] = filtered.aggregate(Avg('largest_killing_spree'))\
+            .get('largest_killing_spree__avg')
+        avg['killing_sprees__avg'] = filtered.aggregate(Avg('killing_sprees'))\
+            .get('killing_sprees__avg')
+        avg['double_kills__avg'] = filtered.aggregate(Avg('double_kills'))\
+            .get('double_kills__avg')
+        avg['triple_kills__avg'] = filtered.aggregate(Avg('triple_kills'))\
+            .get('triple_kills__avg')
+        avg['quadra_kills__avg'] = filtered.aggregate(Avg('quadra_kills'))\
+            .get('quadra_kills__avg')
+        avg['penta_kills__avg'] = filtered.aggregate(Avg('penta_kills'))\
+            .get('penta_kills__avg')
+        avg['double_kills__sum'] = filtered.aggregate(Sum('double_kills'))\
+            .get('double_kills__sum')
+        avg['triple_kills__sum'] = filtered.aggregate(Sum('triple_kills'))\
+            .get('triple_kills__sum')
+        avg['quadra_kills__sum'] = filtered.aggregate(Sum('quadra_kills'))\
+            .get('quadra_kills__sum')
+        avg['penta_kills__sum'] = filtered.aggregate(Sum('penta_kills'))\
+            .get('penta_kills__sum')
+        avg['turret_kills__avg'] = filtered.aggregate(Avg('turret_kills'))\
+            .get('turret_kills__avg')
+        avg['inhibitor_kills__avg'] = filtered.aggregate(Avg('inhibitor_kills'))\
+            .get('inhibitor_kills__avg')
+        avg['unreal_kills__avg'] = filtered.aggregate(Avg('unreal_kills'))\
+            .get('unreal_kills__avg')
+        avg['total_minions_killed__avg'] = filtered.aggregate(Avg('total_minions_killed'))\
+            .get('total_minions_killed__avg')
+        avg['neutral_minions_killed__avg'] = filtered.aggregate(Avg('neutral_minions_killed'))\
+            .get('neutral_minions_killed__avg')
+        avg['neutral_minions_killed_enemy_jungle__avg'] = filtered.aggregate(Avg('neutral_minions_killed_enemy_jungle'))\
+            .get('neutral_minions_killed_enemy_jungle__avg')
+
+        # Damage info
+        avg['total_damage_dealt__avg'] = filtered.aggregate(Avg('total_damage_dealt'))\
+            .get('total_damage_dealt__avg')
+        avg['total_damage_dealt_to_champions__avg'] = filtered.aggregate(Avg('total_damage_dealt_to_champions'))\
+            .get('total_damage_dealt_to_champions__avg')
+        avg['physical_damage_dealt__avg'] = filtered.aggregate(Avg('physical_damage_dealt'))\
+            .get('physical_damage_dealt__avg')
+        avg['physical_damage_dealt_to_champions__avg'] = filtered.aggregate(Avg('physical_damage_dealt_to_champions'))\
+            .get('physical_damage_dealt_to_champions__avg')
+        avg['largest_critical_strike__avg'] = filtered.aggregate(Avg('largest_critical_strike'))\
+            .get('largest_critical_strike__avg')
+        avg['magic_damage_dealt__avg'] = filtered.aggregate(Avg('magic_damage_dealt'))\
+            .get('magic_damage_dealt__avg')
+        avg['magic_damage_dealt_to_champions__avg'] = filtered.aggregate(Avg('magic_damage_dealt_to_champions'))\
+            .get('magic_damage_dealt_to_champions__avg')
+        avg['true_damage_dealt__avg'] = filtered.aggregate(Avg('true_damage_dealt'))\
+            .get('true_damage_dealt__avg')
+        avg['true_damage_dealt_to_champions__avg'] = filtered.aggregate(Avg('true_damage_dealt_to_champions'))\
+            .get('true_damage_dealt_to_champions__avg')
+        avg['damage_dealt_to_turrets__avg'] = filtered.aggregate(Avg('damage_dealt_to_turrets'))\
+            .get('damage_dealt_to_turrets__avg')
+        avg['damage_dealt_to_objectives__avg'] = filtered.aggregate(Avg('damage_dealt_to_objectives'))\
+            .get('damage_dealt_to_objectives__avg')
+        avg['total_damage_taken__avg'] = filtered.aggregate(Avg('total_damage_taken'))\
+            .get('total_damage_taken__avg')
+        avg['physical_damage_taken__avg'] = filtered.aggregate(Avg('physical_damage_taken'))\
+            .get('physical_damage_taken__avg')
+        avg['magical_damage_taken__avg'] = filtered.aggregate(Avg('magical_damage_taken'))\
+            .get('magical_damage_taken__avg')
+        avg['true_damage_taken__avg'] = filtered.aggregate(Avg('true_damage_taken'))\
+            .get('true_damage_taken__avg')
+        avg['damage_self_mitigated__avg'] = filtered.aggregate(Avg('damage_self_mitigated'))\
+            .get('damage_self_mitigated__avg')
+        avg['total_heal__avg'] = filtered.aggregate(Avg('total_heal'))\
+            .get('total_heal__avg')
+        avg['total_units_healed__avg'] = filtered.aggregate(Avg('total_units_healed'))\
+            .get('total_units_healed__avg')
+
+        # Common info
+        avg['vision_score__avg'] = filtered.aggregate(Avg('vision_score'))\
+            .get('vision_score__avg')
+        avg['wards_placed__avg'] = filtered.aggregate(Avg('wards_placed'))\
+            .get('wards_placed__avg')
+        avg['wards_killed__avg'] = filtered.aggregate(Avg('wards_killed'))\
+            .get('wards_killed__avg')
+        avg['vision_wards_bought_in_game__avg'] = filtered.aggregate(Avg('vision_wards_bought_in_game'))\
+            .get('vision_wards_bought_in_game__avg')
+        avg['sight_wards_bought_in_game__avg'] = filtered.aggregate(Avg('sight_wards_bought_in_game'))\
+            .get('sight_wards_bought_in_game__avg')
+        avg['total_time_crowd_control_dealt__avg'] = filtered.aggregate(Avg('total_time_crowd_control_dealt'))\
+            .get('total_time_crowd_control_dealt__avg')
+        avg['longest_time_spent_living__avg'] = filtered.aggregate(Avg('longest_time_spent_living'))\
+            .get('longest_time_spent_living__avg')
+        avg['gold_spent__avg'] = filtered.aggregate(Avg('gold_spent'))\
+            .get('gold_spent__avg')
+        avg['gold_earned__avg'] = filtered.aggregate(Avg('gold_earned'))\
+            .get('gold_earned__avg')
+        avg['champ_level__avg'] = filtered.aggregate(Avg('champ_level'))\
+            .get('champ_level__avg')
+        avg['time_ccing_others__avg'] = filtered.aggregate(Avg('time_ccing_others'))\
+            .get('time_ccing_others__avg')
 
         return avg

@@ -53,6 +53,6 @@ class AccountRetrieveView(APIView):
         vessel = get_object_or_404(Account, **lookup)
         response = SummonerInfoSerializer(vessel, context={'request': request}).data
         analyzer = Analyzer(account=account)
-        response['analytics'] = analyzer.get_avg()
+        response['analytics'] = analyzer.get_base_info()
 
         return Response(response)
