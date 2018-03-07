@@ -1,7 +1,7 @@
 from analytics.api.serializers import SummonerInfoSerializer
 from analytics.models import Account, Region
 from analytics.api_external import RiotAPI
-from analytics.statistic import Updater
+from analytics.statistic import Updater, Analyzer
 
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView, Response
@@ -51,6 +51,8 @@ class AccountRetrieveView(APIView):
         lookup = {'region': region, 'name': acc_info['name']}
 
         vessel = get_object_or_404(Account, **lookup)
-        serializer = SummonerInfoSerializer(vessel, context={'request': request})
+        response = SummonerInfoSerializer(vessel, context={'request': request}).data
+        analyzer = Analyzer(account=account)
+        response['analytics'] = analyzer.get_avg()
 
-        return Response(serializer.data)
+        return Response(response)

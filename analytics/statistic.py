@@ -1,6 +1,7 @@
 from .models import Account, Champion, Match, League, SummonerLeague, MatchPlayer
 from .api_external import RiotAPI
 from django.utils import timezone
+from django.db.models import Avg, Sum
 from time import sleep
 
 # TODO: rework this (_update_leagues, for example)... :)
@@ -182,3 +183,24 @@ class Updater(object):
                     account=self._account,
                     league=league
                 )
+
+
+class Analyzer(object):
+    def __init__(self, account):
+        self._account = account
+
+    def get_avg(self):
+        filtered = MatchPlayer.objects.filter(account=self._account)
+        kills = filtered.aggregate(Sum('kills'))
+        assists = filtered.aggregate(Sum('assists'))
+        deaths = filtered.aggregate(Sum('deaths'))
+        avg = {
+            'kills': {**filtered.aggregate(Avg('kills')), **kills},
+            'deaths': {**filtered.aggregate(Avg('deaths')), **deaths},
+            'assists': {**filtered.aggregate(Avg('assists')), **assists},
+            'kda': {
+                'kda__avg': (kills.get('kills__sum') + assists.get('assists__sum')) / deaths.get('deaths__sum')
+            },
+        }
+
+        return avg
