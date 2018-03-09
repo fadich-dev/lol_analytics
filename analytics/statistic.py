@@ -79,6 +79,11 @@ class Updater(object):
 
         champion = Champion.objects.filter(champion_id=player['championId']).first()
 
+        kills = player['stats'].get('kills', 0)
+        deaths = player['stats'].get('deaths', 0)
+        assists = player['stats'].get('assists', 0)
+        kda = (kills + assists) / (deaths or 1)
+
         MatchPlayer.objects.create(
             account=account,
             match=match,
@@ -90,6 +95,8 @@ class Updater(object):
             kills=player['stats'].get('kills'),
             deaths=player['stats'].get('deaths'),
             assists=player['stats'].get('assists'),
+            kda=kda,
+            kda_perfect=not deaths,
             largest_multi_kill=player['stats'].get('largestMultiKill'),
             largest_killing_spree=player['stats'].get('largestKillingSpree'),
             killing_sprees=player['stats'].get('killingSprees'),
@@ -194,6 +201,10 @@ class Analyzer(object):
         avg = dict()
         filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[:limit]
 
+        kills_sum = avg.get('kills__sum', 0)
+        deaths_sum = avg.get('deaths__sum', 0)
+        assists_sum = avg.get('assists__sum', 0)
+
         # Match info
         avg['matches__sum'] = filtered.count()
         avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **self._filters).count()
@@ -202,19 +213,17 @@ class Analyzer(object):
         avg['loses__avg'] = avg['loses__sum'] / avg['matches__sum']
 
         # KDA info
-        avg['kills__sum'] = filtered.aggregate(Sum('kills'))\
-            .get('kills__sum')
-        avg['deaths__sum'] = filtered.aggregate(Sum('deaths'))\
-            .get('deaths__sum')
-        avg['assists__sum'] = filtered.aggregate(Sum('assists'))\
-            .get('assists__sum')
+        avg['kills__sum'] = kills_sum
+        avg['deaths__sum'] = deaths_sum
+        avg['assists__sum'] = assists_sum
         avg['kills__avg'] = filtered.aggregate(Avg('kills'))\
             .get('kills__avg')
         avg['deaths__avg'] = filtered.aggregate(Avg('deaths'))\
             .get('deaths__avg')
         avg['assists__avg'] = filtered.aggregate(Avg('assists'))\
             .get('assists__avg')
-        avg['kda__avg'] = (avg.get('kills__sum') + avg.get('assists__sum')) / avg.get('deaths__sum')
+        avg['kda__avg'] = (kills_sum + assists_sum) / (deaths_sum or 1)
+        avg['kda__perfect'] = not avg.get('deaths__sum')
 
         # Additional kills info
         avg['largest_multi_kill__avg'] = filtered.aggregate(Avg('largest_multi_kill'))\

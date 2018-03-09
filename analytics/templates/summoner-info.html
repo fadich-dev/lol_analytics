@@ -65,7 +65,12 @@
                         </strong>:
                         <span>
                             <strong>
-                                {{ match_player.champion.name }}
+                                {{ match_player.champion.name }},
+                                {% if match_player.kda_perfect %}
+                                    <u>perfect KDA</u>
+                                {% else %}
+                                    KDA: {{ match_player.kda|floatformat:2 }}
+                                {% endif %}
                                 ({{ match_player.kills }}/{{ match_player.deaths }}/{{ match_player.assists }})
                             </strong>
                         </span>

@@ -77,6 +77,8 @@ class MatchPlayer(models.Model):
     kills = models.SmallIntegerField(null=True)
     deaths = models.SmallIntegerField(null=True)
     assists = models.SmallIntegerField(null=True)
+    kda = models.FloatField(null=True)
+    kda_perfect = models.BooleanField(default=False)
     largest_multi_kill = models.SmallIntegerField(null=True)
     largest_killing_spree = models.SmallIntegerField(null=True)
     killing_sprees = models.SmallIntegerField(null=True)

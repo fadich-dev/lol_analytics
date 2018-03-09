@@ -39,6 +39,8 @@ class MatchPlayerSerializer(serializers.ModelSerializer):
             'kills',
             'deaths',
             'assists',
+            'kda',
+            'kda_perfect',
             'largest_multi_kill',
             'largest_killing_spree',
             'killing_sprees',
