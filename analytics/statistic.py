@@ -2,6 +2,7 @@ from .models import Account, Champion, Match, League, SummonerLeague, MatchPlaye
 from .api_external import RiotAPI
 from django.utils import timezone
 from django.db.models import Avg, Sum
+from collections import Counter
 
 
 # TODO: rework this (_update_leagues, for example)... :)
@@ -193,13 +194,19 @@ class Updater(object):
 
 
 class Analyzer(object):
+    _limit = 20
+
     def __init__(self, account, **kwargs):
         self._account = account
         self._filters = {'account': self._account, **kwargs}
 
-    def get_base_info(self, limit=20):
+    def set_limit(self, limit):
+        self._limit = limit
+        return self
+
+    def get_base_info(self):
         avg = dict()
-        filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[:limit]
+        filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[:self._limit]
 
         kills_sum = avg.get('kills__sum', 0)
         deaths_sum = avg.get('deaths__sum', 0)
@@ -325,5 +332,19 @@ class Analyzer(object):
 
         return avg
 
-    def get_time_progress(self):
-        pass
+    def get_extra_info(self):
+        extra = dict()
+        matches = Match.objects.filter(matchplayer__account=self._account).order_by('-timestamp')[:self._limit]
+
+        win_against_champs = list()
+        lose_against_champs = list()
+        top_win_against = None
+        for match in matches:
+            cur = match.matchplayer_set.filter(account=self._account).first()
+            if cur.win:
+                [win_against_champs.append(info.champion) for info in match.matchplayer_set.filter(win=not cur.win).all()]
+            else:
+                [lose_against_champs.append(info.champion) for info in match.matchplayer_set.filter(win=not cur.win).all()]
+
+        print(Counter(win_against_champs))
+        print(Counter(lose_against_champs))

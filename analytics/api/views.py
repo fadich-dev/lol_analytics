@@ -54,5 +54,6 @@ class AccountRetrieveView(APIView):
         response = SummonerInfoSerializer(vessel, context={'request': request}).data
         analyzer = Analyzer(account=account)
         response['analytics'] = analyzer.get_base_info()
+        analyzer.get_extra_info()
 
         return Response(response)
