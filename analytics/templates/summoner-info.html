@@ -63,7 +63,12 @@
                                 {{ match_player.account.name }}
                             </a>
                         </strong>:
-                        <strong>{{ match_player.champion.name }}</strong>
+                        <span>
+                            <strong>
+                                {{ match_player.champion.name }}
+                                ({{ match_player.kills }}/{{ match_player.deaths }}/{{ match_player.assists }})
+                            </strong>
+                        </span>
                         &ndash;
                         <span>
                             {% if not match_player.role.lower == 'none' %}
