@@ -31,7 +31,7 @@ class AccountRetrieveView(APIView):
                 icon_id=acc_info['profileIconId'],
                 summoner_level=acc_info['summonerLevel'],
             )
-            update = True
+            # update = True
         else:
             account.icon_id = acc_info['profileIconId']
             account.summoner_level = acc_info['summonerLevel']
@@ -54,6 +54,6 @@ class AccountRetrieveView(APIView):
         response = SummonerInfoSerializer(vessel, context={'request': request}).data
         analyzer = Analyzer(account=account)
         response['analytics'] = analyzer.get_base_info()
-        analyzer.get_extra_info()
+        response['extra'] = analyzer.get_extra_info()
 
         return Response(response)

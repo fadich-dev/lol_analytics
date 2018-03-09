@@ -216,8 +216,8 @@ class Analyzer(object):
         avg['matches__sum'] = filtered.count()
         avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **self._filters).count()
         avg['loses__sum'] = avg['matches__sum'] - avg['wins__sum']
-        avg['wins__avg'] = avg['wins__sum'] / avg['matches__sum']
-        avg['loses__avg'] = avg['loses__sum'] / avg['matches__sum']
+        avg['wins__avg'] = avg['wins__sum'] / (avg['matches__sum'] or 1)
+        avg['loses__avg'] = avg['loses__sum'] / (avg['matches__sum'] or 1)
 
         # KDA info
         avg['kills__sum'] = kills_sum
@@ -338,13 +338,13 @@ class Analyzer(object):
 
         win_against_champs = list()
         lose_against_champs = list()
-        top_win_against = None
+
         for match in matches:
             cur = match.matchplayer_set.filter(account=self._account).first()
-            if cur.win:
-                [win_against_champs.append(info.champion) for info in match.matchplayer_set.filter(win=not cur.win).all()]
-            else:
-                [lose_against_champs.append(info.champion) for info in match.matchplayer_set.filter(win=not cur.win).all()]
+            list_to = win_against_champs if cur.win else lose_against_champs
+            list_to += [info.champion.name for info in match.matchplayer_set.filter(win=not cur.win).all()]
 
-        print(Counter(win_against_champs))
-        print(Counter(lose_against_champs))
+        extra['win_against_champs'] = dict(Counter(win_against_champs).most_common(3))
+        extra['lose_against_champs'] = dict(Counter(lose_against_champs).most_common(3))
+
+        return extra
