@@ -2,7 +2,7 @@ from .models import Account, Champion, Match, League, SummonerLeague, MatchPlaye
 from .api_external import RiotAPI
 from django.utils import timezone
 from django.db.models import Avg, Sum
-from time import sleep
+
 
 # TODO: rework this (_update_leagues, for example)... :)
 
@@ -186,17 +186,17 @@ class Updater(object):
 
 
 class Analyzer(object):
-    def __init__(self, account):
+    def __init__(self, account, **kwargs):
         self._account = account
+        self._filters = {'account': self._account, **kwargs}
 
-    def get_base_info(self, **kwargs):
+    def get_base_info(self, limit=20):
         avg = dict()
-        filters = {'account': self._account, **kwargs}
-        filtered = MatchPlayer.objects.filter(**filters)
+        filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[:limit]
 
         # Match info
         avg['matches__sum'] = filtered.count()
-        avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **filters).count()
+        avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **self._filters).count()
         avg['loses__sum'] = avg['matches__sum'] - avg['wins__sum']
         avg['wins__avg'] = avg['wins__sum'] / avg['matches__sum']
         avg['loses__avg'] = avg['loses__sum'] / avg['matches__sum']
@@ -315,3 +315,6 @@ class Analyzer(object):
             .get('time_ccing_others__avg')
 
         return avg
+
+    def get_time_progress(self):
+        pass

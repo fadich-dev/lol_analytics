@@ -36,11 +36,11 @@
 <div class="search-wrap">
     <form action="/analytics">
         <p>
-            <input type="text" name="acc" placeholder="Summoner name" value="{{ name }}">
+            <input type="text" name="account" placeholder="Summoner name" value="{{ name }}">
             <input type="submit" value="Find">
             <br>
 
-            <select name="srv">
+            <select name="region">
                 <option value="BR1" {% if region == 'BR1' %} selected {% endif %}>Brazil</option>
                 <option value="EUN1" {% if region == 'EUN1' %} selected {% endif %}>EU Nordic &amp; East</option>
                 <option value="EUW1" {% if region == 'EUW1' %} selected {% endif %}>EU West</option>
