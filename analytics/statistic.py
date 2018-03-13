@@ -195,6 +195,7 @@ class Updater(object):
 
 class Analyzer(object):
     _limit = 20
+    _offset = 0
 
     def __init__(self, account, **kwargs):
         self._account = account
@@ -204,17 +205,27 @@ class Analyzer(object):
         self._limit = limit
         return self
 
+    def set_offset(self, offset):
+        self._offset = offset
+        return self
+
+    def get_full_analytics(self):
+        return {
+            **self.get_base_info(),
+            **self.get_extra_info()
+        }
+
     def get_base_info(self):
         avg = dict()
-        filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[:self._limit]
+        filtered = MatchPlayer.objects.filter(**self._filters).order_by('-match__timestamp')[self._offset:self._limit]
 
-        kills_sum = avg.get('kills__sum', 0)
-        deaths_sum = avg.get('deaths__sum', 0)
-        assists_sum = avg.get('assists__sum', 0)
+        kills_sum = filtered.aggregate(Sum('kills')).get('kills__sum') or 0
+        deaths_sum = filtered.aggregate(Sum('deaths')).get('deaths__sum') or 0
+        assists_sum = filtered.aggregate(Sum('assists')).get('assists__sum') or 0
 
         # Match info
         avg['matches__sum'] = filtered.count()
-        avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **self._filters).count()
+        avg['wins__sum'] = MatchPlayer.objects.filter(win=True, **self._filters)[self._offset:self._limit].count()
         avg['loses__sum'] = avg['matches__sum'] - avg['wins__sum']
         avg['wins__avg'] = avg['wins__sum'] / (avg['matches__sum'] or 1)
         avg['loses__avg'] = avg['loses__sum'] / (avg['matches__sum'] or 1)
@@ -334,7 +345,8 @@ class Analyzer(object):
 
     def get_extra_info(self):
         extra = dict()
-        matches = Match.objects.filter(matchplayer__account=self._account).order_by('-timestamp')[:self._limit]
+        filters = {'matchplayer__{k}'.format(k=key): val for key, val in self._filters.items()}
+        matches = Match.objects.filter(**filters).order_by('-timestamp')[self._offset:self._limit]
 
         win_against_champs = list()
         lose_against_champs = list()
@@ -344,7 +356,7 @@ class Analyzer(object):
             list_to = win_against_champs if cur.win else lose_against_champs
             list_to += [info.champion.name for info in match.matchplayer_set.filter(win=not cur.win).all()]
 
-        extra['win_against_champs'] = dict(Counter(win_against_champs).most_common(3))
-        extra['lose_against_champs'] = dict(Counter(lose_against_champs).most_common(3))
+        extra['win_against_champs'] = dict(Counter(win_against_champs).most_common(5))
+        extra['lose_against_champs'] = dict(Counter(lose_against_champs).most_common(5))
 
         return extra
