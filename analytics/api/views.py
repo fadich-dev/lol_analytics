@@ -19,6 +19,8 @@ class AccountRetrieveView(APIView):
         api = RiotAPI(server)
         res = api.get_account(name)
         update = 'update' in request.GET
+        matches_limit = int(request.GET.get('matches-limit', 20))
+        matches_offset = int(request.GET.get('matches-offset', 0))
         try:
             limit = int(request.GET.get('limit', 20))
         except ValueError as e:
@@ -57,7 +59,7 @@ class AccountRetrieveView(APIView):
         updater = Updater(account)
         if update:
             if not updater.is_updated():
-                updater.update_data()
+                updater.update_data(matches_limit=matches_limit, matches_offset=matches_offset)
             else:
                 return Response({
                     'message':

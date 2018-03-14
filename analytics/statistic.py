@@ -21,11 +21,11 @@ class Updater(object):
         self._account = account
         self._api = RiotAPI(self._account.region.name)
 
-    def update_data(self):
+    def update_data(self, matches_limit=20, matches_offset=0):
         self._account.updated_at = timezone.now()
         self._account.save()
         self._update_leagues()
-        self._update_matches()
+        self._update_matches(matches_limit, matches_offset)
 
     def is_updated(self):
         if not self._account.updated_at:
@@ -38,10 +38,10 @@ class Updater(object):
 
     def get_next_update(self):
         diff = timezone.now().timestamp() - self._account.updated_at.timestamp()
-        return (0, self.UPDATE_LIMIT - diff)[diff < self.UPDATE_LIMIT]
+        return (0, self.UPDATE_LIMIT - diff)[diff <= self.UPDATE_LIMIT]
 
-    def _update_matches(self):
-        res = self._api.get_match_history(self._account.account_id)
+    def _update_matches(self, limit=20, offset=0):
+        res = self._api.get_match_history(self._account.account_id, offset, offset + limit)
         if res.status_code == 200:
             for api_match in res.json()['matches']:
                 filters = {
@@ -356,7 +356,7 @@ class Analyzer(object):
             list_to = win_against_champs if cur.win else lose_against_champs
             list_to += [info.champion.name for info in match.matchplayer_set.filter(win=not cur.win).all()]
 
-        extra['win_against_champs'] = dict(Counter(win_against_champs).most_common(5))
-        extra['lose_against_champs'] = dict(Counter(lose_against_champs).most_common(5))
+        extra['win_against_champs'] = dict(Counter(win_against_champs).most_common(10))
+        extra['lose_against_champs'] = dict(Counter(lose_against_champs).most_common(10))
 
         return extra
