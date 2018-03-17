@@ -25,7 +25,7 @@
 <body>
 
 <div class="wrap">
-    <a href="/?acc={{ account.name }}&reg={{ account.region }}">Back</a>
+    <a href="/?account={{ account.name }}&region={{ account.region }}">Back</a>
     <h3 align="center">{{ account.name }} <i>({{ account.summoner_level }})</i></h3>
 
     <div align="center">
@@ -47,7 +47,7 @@
 
 
     <div>
-        {% for current_match_player in account.matchplayer_set.all %}
+        {% for current_match_player in account.get_matches_players %}
             <strong>
                 {% if current_match_player.win %}
                     <span class="win">Victory</span>
@@ -58,8 +58,22 @@
             <div style="display: flex; justify-content: space-between;">
                 <div>
                     {% for match_player in current_match_player.match.matchplayer_set.all %}
-                        <strong>{{ match_player.account.name }}</strong>:
-                        <strong>{{ match_player.champion.name }}</strong>
+                        <strong>
+                            <a href="{% url 'info' %}?account={{ match_player.account.name }}&region={{ match_player.account.region }}">
+                                {{ match_player.account.name }}
+                            </a>
+                        </strong>:
+                        <span>
+                            <strong>
+                                {{ match_player.champion.name }},
+                                {% if match_player.kda_perfect %}
+                                    <u>perfect KDA</u>
+                                {% else %}
+                                    KDA: {{ match_player.kda|floatformat:2 }}
+                                {% endif %}
+                                ({{ match_player.kills }}/{{ match_player.deaths }}/{{ match_player.assists }})
+                            </strong>
+                        </span>
                         &ndash;
                         <span>
                             {% if not match_player.role.lower == 'none' %}

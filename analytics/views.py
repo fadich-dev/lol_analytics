@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from .models import Account, Region
-from .statistic import Updater
+from .statistic import Updater, Analyzer
 from .api_external import RiotAPI
 
 
@@ -9,28 +9,22 @@ from .api_external import RiotAPI
 
 
 def info(request):
-    acc = ''
-    reg = ''
-    params = request.GET
-    if 'acc' in params:
-        acc = params['acc']
-    if 'srv' in params:
-        reg = params['srv']
+    name = request.GET.get('account')
+    server = request.GET.get('region')
     update = 'update' in request.GET
 
-    if not (acc or reg):
+    if not (name and server):
         return render(request, 'summoner-not-found.html')
 
-    api = RiotAPI(reg)
-
-    res = api.get_account(acc)
+    api = RiotAPI(server)
+    res = api.get_account(name)
 
     if not res.status_code == 200:
         return render(request, 'summoner-not-found.html')
 
     acc_info = res.json()
 
-    region = Region.objects.get_or_create(name=reg.upper())[0]
+    region = Region.objects.get_or_create(name=server.upper())[0]
 
     try:
         account = Account.objects.get(name=acc_info['name'], region=region)
@@ -48,10 +42,12 @@ def info(request):
         )
 
     updater = Updater(account)
+    analyzer = Analyzer(account)
 
     if not updater.is_updated() and update:
         updater.update_data()
 
     return render(request, 'summoner-info.html', {
-        'account': account
+        'account': account,
+        'base_analytics': analyzer.get_base_info()
     })
