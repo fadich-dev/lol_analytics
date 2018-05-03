@@ -23,12 +23,11 @@ class Account(models.Model):
     def get_leagues(self):
         return [summoner_league.league for summoner_league in self.summonerleague_set.all()]
 
-    def get_matches(self, limit=20):
-        return [match_player.match for match_player in self.get_matches_players(limit=limit)]
+    def get_matches(self):
+        return [match_player.match for match_player in self.get_matches_players()]
 
-    def get_matches_players(self, limit=20):
-        mp = self.matchplayer_set.order_by('-match__timestamp').all()
-        return mp[:limit] if limit else mp
+    def get_matches_players(self):
+        return self.matchplayer_set.order_by('-match__timestamp').all()
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.region.name)
