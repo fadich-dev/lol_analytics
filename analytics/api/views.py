@@ -8,11 +8,30 @@ from rest_framework.views import APIView, Response
 
 
 class AccountRetrieveView(APIView):
+    _filters = [
+        'lane',
+        'role',
+        'champion_id',
+    ]
+
     def get(self, request, server=None, name=None, format=None):
         server = server.upper()
         api = RiotAPI(server)
         res = api.get_account(name)
         update = 'update' in request.GET
+        matches_limit = int(request.GET.get('matches-limit', 20))
+        matches_offset = int(request.GET.get('matches-offset', 0))
+        try:
+            limit = int(request.GET.get('limit', 20))
+        except ValueError as e:
+            limit = 20
+
+        try:
+            offset = int(request.GET.get('offset', 0))
+        except ValueError as e:
+            offset = 0
+
+        filters = self._get_match_filters(request)
 
         if not res.status_code == 200:
             return Response(status=res.status_code)
@@ -40,7 +59,7 @@ class AccountRetrieveView(APIView):
         updater = Updater(account)
         if update:
             if not updater.is_updated():
-                updater.update_data()
+                updater.update_data(matches_limit=matches_limit, matches_offset=matches_offset)
             else:
                 return Response({
                     'message':
@@ -52,8 +71,34 @@ class AccountRetrieveView(APIView):
 
         vessel = get_object_or_404(Account, **lookup)
         response = SummonerInfoSerializer(vessel, context={'request': request}).data
-        analyzer = Analyzer(account=account)
-        response['analytics'] = analyzer.get_base_info()
-        response['extra'] = analyzer.get_extra_info()
+        matches = response.get('matches')
+
+        # Custom filtering... TODO: guess... :)
+        def filter_matches(match):
+            for match_player in match.get('players'):
+                print(match_player)
+                if match_player.get('account').get('name') == acc_info['name']:
+                    for prop, val in filters.items():
+                        if not match_player.get(prop) == val:
+                            return False
+                    return True
+
+            return False
+
+        response['matches'] = list(filter(filter_matches, matches))[offset:limit]
+
+        analyzer = Analyzer(account=account, **filters)
+        analyzer.set_limit(limit)
+        analyzer.set_offset(offset)
+        response['analytics'] = analyzer.get_full_analytics()
 
         return Response(response)
+
+    def _get_match_filters(self, request):
+        f = dict()
+
+        for param in self._filters:
+            if param in request.GET:
+                f[param] = request.GET.get(param)
+
+        return f
